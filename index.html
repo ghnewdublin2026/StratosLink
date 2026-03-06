@@ -3,20 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Precision GPS Tracker</title>
+    <title>StratosLink | Precision GNSS</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="map"></div>
-    <div class="controls">
-        <div id="status">Status: Internal GPS (Low Precision)</div>
-        <div id="stats">Accuracy: -- | Satellites: --</div>
-        <button id="connectBle">Connect High-Precision Hardware</button>
+    
+    <div class="ui-panel">
+        <div class="status-bar">
+            <span id="status">Status: Internal GPS</span>
+            <span id="fix-badge" class="badge p-low">No Fix</span>
+        </div>
+        <div id="stats">Acc: -- | Sats: -- | Fix: --</div>
+        
+        <div class="button-group">
+            <button id="connectBle" class="btn-primary">Connect RTK Hardware</button>
+            <button id="downloadCsv" class="btn-secondary">Export CSV</button>
+        </div>
+
+        <div class="log-container">
+            <div class="tabs">
+                <button onclick="switchView('second')" id="btn-sec" class="tab-btn active">Per Second</button>
+                <button onclick="switchView('minute')" id="btn-min" class="tab-btn">Per Minute</button>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Coordinates</th>
+                            <th>Acc</th>
+                            <th>Sats</th>
+                            <th>Fix</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logBody"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
-
