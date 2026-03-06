@@ -6,20 +6,21 @@
 
 SFE_UBLOX_GNSS myGNSS;
 BLECharacteristic *pChar;
-bool deviceConnected = false;
+bool connected = false;
 
-class MyServerCallbacks: public BLEServerCallbacks {
-    void onConnect(BLEServer* pS) { deviceConnected = true; };
-    void onDisconnect(BLEServer* pS) { deviceConnected = false; pS->getAdvertising()->start(); }
+class MyServer: public BLEServerCallbacks {
+    void onConnect(BLEServer* pS) { connected = true; }
+    void onDisconnect(BLEServer* pS) { connected = false; pS->getAdvertising()->start(); }
 };
 
 void setup() {
   Wire.begin();
-  if (!myGNSS.begin()) while (1); // Halt if no GNSS
+  if (!myGNSS.begin()) while(1);
+  myGNSS.setNavigationFrequency(5); // 5Hz update rate
 
   BLEDevice::init("StratosLink-Rover");
   BLEServer *pServer = BLEDevice::createServer();
-  pServer->setCallbacks(new MyServerCallbacks());
+  pServer->setCallbacks(new MyServer());
   BLEService *pService = pServer->createService("181a");
   pChar = pService->createCharacteristic("2a67", BLECharacteristic::PROPERTY_NOTIFY);
   pService->start();
@@ -27,7 +28,7 @@ void setup() {
 }
 
 void loop() {
-  if (myGNSS.getPVT() && deviceConnected) {
+  if (myGNSS.getPVT() && connected) {
     float lat = myGNSS.getLatitude() / 10000000.0;
     float lon = myGNSS.getLongitude() / 10000000.0;
     float acc = myGNSS.getHorizontalAccuracy() / 1000.0;
@@ -35,14 +36,11 @@ void loop() {
     uint8_t fix = (uint8_t)myGNSS.getFixType();
 
     uint8_t pkg[14];
-    memcpy(&pkg[0], &lat, 4);
-    memcpy(&pkg[4], &lon, 4);
-    memcpy(&pkg[8], &acc, 4);
-    pkg[12] = siv;
-    pkg[13] = fix;
+    memcpy(&pkg[0], &lat, 4); memcpy(&pkg[4], &lon, 4); memcpy(&pkg[8], &acc, 4);
+    pkg[12] = siv; pkg[13] = fix;
 
     pChar->setValue(pkg, 14);
     pChar->notify();
   }
-  delay(200);
+  delay(100);
 }
