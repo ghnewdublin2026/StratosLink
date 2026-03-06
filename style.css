@@ -1,25 +1,37 @@
-body, html, #map { height: 100%; width: 100%; margin: 0; padding: 0; font-family: sans-serif; }
+:root { --blue: #007AFF; --green: #34C759; --red: #FF3B30; --gray: #8E8E93; }
+body, html, #map { height: 100%; width: 100%; margin: 0; padding: 0; font-family: -apple-system, system-ui; }
+
 .ui-panel {
     position: absolute; bottom: 0; width: 100%; z-index: 1000;
-    background: rgba(255, 255, 255, 0.95); border-radius: 20px 20px 0 0;
-    box-shadow: 0 -5px 15px rgba(0,0,0,0.2); padding: 15px; box-sizing: border-box;
+    background: white; border-radius: 20px 20px 0 0; padding: 15px; box-sizing: border-box;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.15); max-height: 80vh; overflow-y: auto;
 }
-.status-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-weight: bold; }
-#stats { font-size: 0.85rem; color: #555; margin-bottom: 12px; }
-.button-group { display: flex; gap: 10px; margin-bottom: 15px; }
-button { flex: 1; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-.btn-primary { background: #007AFF; color: white; }
-.btn-secondary { background: #34C759; color: white; }
 
-/* Table Styling */
-.table-wrapper { max-height: 180px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px; }
-table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
-th { background: #f0f0f0; padding: 5px; position: sticky; top: 0; }
-td { padding: 5px; border-bottom: 1px solid #eee; text-align: center; font-family: monospace; }
+.status-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 4px; }
+#stats { font-size: 0.8rem; color: var(--gray); margin-bottom: 12px; }
 
-/* Status Badges */
-.badge { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; color: white; }
-.p-low { background: #ff3b30; }
-.p-high { background: #ffcc00; color: black; }
-.p-fixed { background: #4cd964; }
-.tab-btn.active { border-bottom: 3px solid #007AFF; color: #007AFF; }
+.survey-box { background: #f2f2f7; padding: 12px; border-radius: 12px; margin-bottom: 15px; }
+textarea { width: 100%; height: 60px; border: 1px solid #d1d1d6; border-radius: 8px; padding: 8px; font-size: 16px; margin-bottom: 8px; }
+.action-bar { display: flex; gap: 10px; }
+.camera-btn { background: #e5e5ea; padding: 12px; border-radius: 8px; font-size: 0.9rem; flex: 1; text-align: center; }
+.btn-primary { background: var(--blue); color: white; flex: 2; border: none; border-radius: 8px; font-weight: bold; }
+
+#imagePreview img { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-top: 10px; }
+
+.tabs { display: flex; border-bottom: 1px solid #eee; margin-bottom: 10px; }
+.tab-btn { flex: 1; padding: 10px; border: none; background: none; color: var(--gray); }
+.tab-btn.active { color: var(--blue); border-bottom: 2px solid var(--blue); font-weight: bold; }
+
+.note-card { border-bottom: 1px solid #eee; padding: 10px 0; }
+.note-img { width: 100%; border-radius: 8px; margin-top: 8px; }
+.note-meta { font-size: 0.7rem; color: var(--gray); margin-top: 4px; }
+
+.footer-actions { display: flex; gap: 10px; margin-top: 15px; }
+.btn-ble { background: #5856D6; color: white; border: none; padding: 10px; border-radius: 8px; flex: 1; }
+.btn-secondary { background: var(--green); color: white; border: none; padding: 10px; border-radius: 8px; flex: 1; }
+
+.hidden { display: none; }
+.badge { padding: 2px 6px; border-radius: 4px; color: white; font-size: 0.7rem; }
+.p-low { background: var(--red); }
+.p-high { background: #FFCC00; color: black; }
+.p-fixed { background: var(--green); }
