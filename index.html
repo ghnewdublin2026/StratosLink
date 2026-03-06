@@ -1,50 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>StratosLink | Precision GNSS</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div id="map"></div>
-    
-    <div class="ui-panel">
-        <div class="status-bar">
-            <span id="status">Status: Internal GPS</span>
-            <span id="fix-badge" class="badge p-low">No Fix</span>
-        </div>
-        <div id="stats">Acc: -- | Sats: -- | Fix: --</div>
-        
-        <div class="button-group">
-            <button id="connectBle" class="btn-primary">Connect RTK Hardware</button>
-            <button id="downloadCsv" class="btn-secondary">Export CSV</button>
-        </div>
-
-        <div class="log-container">
-            <div class="tabs">
-                <button onclick="switchView('second')" id="btn-sec" class="tab-btn active">Per Second</button>
-                <button onclick="switchView('minute')" id="btn-min" class="tab-btn">Per Minute</button>
-            </div>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Coordinates</th>
-                            <th>Acc</th>
-                            <th>Sats</th>
-                            <th>Fix</th>
-                        </tr>
-                    </thead>
-                    <tbody id="logBody"></tbody>
-                </table>
-            </div>
-        </div>
+<div class="ui-panel main-survey">
+    <div class="status-bar">
+        <span id="status">📡 StratosLink: Ready</span>
+        <span id="fix-badge" class="badge p-low">No Fix</span>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="app.js"></script>
-</body>
-</html>
+    <div class="note-section">
+        <textarea id="noteInput" placeholder="Enter field observation..."></textarea>
+        
+        <div class="attachment-bar">
+            <label class="file-input-label">
+                📷 Attach Photo
+                <input type="file" id="imageInput" accept="image/*" capture="environment">
+            </label>
+            <button id="saveNoteBtn" class="btn-primary">Log Observation</button>
+        </div>
+        <div id="imagePreview" class="hidden"></div>
+    </div>
+
+    <div class="log-container">
+        <div class="tabs">
+            <button onclick="switchView('notes')" id="btn-notes" class="tab-btn active">Observations</button>
+            <button onclick="switchView('second')" id="btn-sec" class="tab-btn">Live GPS</button>
+        </div>
+        <div class="table-wrapper">
+            <div id="notesList" class="notes-feed"></div>
+            <table id="gpsTable" class="hidden">
+                <thead><tr><th>Time</th><th>Coords</th><th>Acc</th><th>Fix</th></tr></thead>
+                <tbody id="logBody"></tbody>
+            </table>
+        </div>
+    </div>
+    
+    <button id="downloadCsv" class="btn-secondary">Export Full Survey (.CSV)</button>
+</div>
