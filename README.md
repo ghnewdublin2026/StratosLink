@@ -1,22 +1,15 @@
 # 📍 StratosLink
-**Centimeter-Accurate GNSS Tracking for the Mobile Web**
+**Professional GNSS Field Survey & RTK Workstation**
 
-StratosLink bridges high-precision RTK hardware to a smartphone browser via Web-Bluetooth, providing real-time accuracy visualization and data logging.
+StratosLink is a high-precision field data collection tool that bridges RTK-capable GNSS hardware to a mobile web dashboard. It enables centimeter-level observations with instant photo and note logging.
 
-### 🌟 Key Features
-- **1cm Accuracy Support:** Direct integration with u-blox ZED-F9P for RTK Fixed status.
-- **Dual-Mode Logging:** View data second-by-second for live movement or minute-by-minute for drift analysis.
-- **CSV Export:** One-tap export of high-precision coordinate logs for GIS analysis.
-- **Hybrid Source:** Automatically uses phone GPS when hardware is offline.
+### 🚀 Core Features
+* **Centimeter Precision:** Seamlessly connects to u-blox ZED-F9P hardware via Web-Bluetooth.
+* **Geotagged Observations:** Log field notes and attach photos—each entry is instantly timestamped and "GPS-stamped" with the current precision data.
+* **RTK Status Monitoring:** Real-time tracking of Fix Type (3D, Float, Fixed) and Satellites in View (SIV).
+* **Dual-View Dashboard:** Switch between a social-style "Observation Feed" and a raw "Live GPS" data table.
+* **Survey Export:** Download your entire session as a comprehensive .CSV file for GIS or Excel.
 
-### 🔌 Hardware Protocol
-| Offset | Type | Desc |
-| :--- | :--- | :--- |
-| 0-3 | Float | Lat |
-| 4-7 | Float | Lon |
-| 8-11 | Float | Accuracy (m) |
-| 12 | UInt8 | Satellites (SIV) |
-| 13 | UInt8 | Fix Type (3=3D, 5=Float, 6=Fixed) |
-
----
-**Note:** Requires HTTPS and a Web-Bluetooth compatible browser (Chrome/Edge/Bluefy).
+### 🛠 Hardware Protocol
+The tool expects a 14-byte BLE packet on Service `181a` / Char `2a67`. 
+[Bytes 0-3: Lat] [4-7: Lon] [8-11: Acc] [12: SIV] [13: FixType]
