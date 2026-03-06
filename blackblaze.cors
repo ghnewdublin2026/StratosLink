@@ -1,0 +1,10 @@
+[
+  {
+    "corsConfigurationName": "StratosLink-Policy",
+    "allowedOrigins": ["https://your-github-username.github.io"],
+    "allowedMethods": ["GET", "PUT", "POST", "HEAD"],
+    "allowedHeaders": ["*"],
+    "exposeHeaders": ["ETag"],
+    "maxAgeSeconds": 3600
+  }
+]
