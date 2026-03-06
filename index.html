@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>StratosLink | RTK Survey Tool</title>
+    <title>StratosLink | RTK Cloud Survey</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1500.0.min.js"></script>
 </head>
 <body>
     <div id="map"></div>
@@ -18,12 +19,9 @@
         <div id="stats">Acc: -- | Sats: -- | Fix: --</div>
 
         <div class="survey-box">
-            <textarea id="noteInput" placeholder="Describe the point or observation..."></textarea>
+            <textarea id="noteInput" placeholder="Observation notes..."></textarea>
             <div class="action-bar">
-                <label class="camera-btn">
-                    📷 Photo
-                    <input type="file" id="imageInput" accept="image/*" capture="environment">
-                </label>
+                <label class="camera-btn">📷 Photo<input type="file" id="imageInput" accept="image/*" capture="environment"></label>
                 <button id="saveNoteBtn" class="btn-primary">Log Point</button>
             </div>
             <div id="imagePreview" class="hidden"></div>
@@ -38,16 +36,27 @@
                 <div id="notesList" class="notes-feed"></div>
                 <div id="gpsView" class="hidden">
                     <table>
-                        <thead><tr><th>Time</th><th>Coords</th><th>Acc</th><th>Fix</th></tr></thead>
+                        <thead><tr><th>Time</th><th>Lat/Lon</th><th>Acc</th><th>Fix</th></tr></thead>
                         <tbody id="logBody"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
+        <div class="cloud-config">
+            <details>
+                <summary>⚙️ Cloud Storage Settings</summary>
+                <input type="text" id="bb-endpoint" placeholder="Endpoint (s3.us-west-004...)">
+                <input type="text" id="bb-bucket" placeholder="Bucket Name">
+                <input type="text" id="bb-keyId" placeholder="Key ID">
+                <input type="password" id="bb-secret" placeholder="App Key">
+                <button id="saveCloudSettings">Save Locally</button>
+            </details>
+        </div>
+
         <div class="footer-actions">
-            <button id="connectBle" class="btn-ble">Connect Hardware</button>
-            <button id="downloadCsv" class="btn-secondary">Export .CSV</button>
+            <button id="connectBle" class="btn-ble">Connect BLE</button>
+            <button id="syncToCloud" class="btn-cloud">📤 Sync to Cloud</button>
         </div>
     </div>
 
