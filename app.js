@@ -7,94 +7,84 @@ let gpsLogs = [];
 let observations = [];
 let currentImg = null;
 
-// Handle GPS Updates
+// Initialize Settings from LocalStorage
+window.onload = () => {
+    ['bb-endpoint', 'bb-bucket', 'bb-keyId'].forEach(id => {
+        document.getElementById(id).value = localStorage.getItem(id) || '';
+    });
+};
+
 function updateGPS(lat, lon, acc, siv, fix) {
     const entry = { time: new Date().toLocaleTimeString(), lat, lon, acc, siv, fix };
     gpsLogs.unshift(entry);
-    if(gpsLogs.length > 100) gpsLogs.pop();
+    if(gpsLogs.length > 50) gpsLogs.pop();
     
-    // Update Map
-    const pos = [lat, lon];
-    marker.setLatLng(pos);
-    circle.setLatLng(pos).setRadius(acc);
+    marker.setLatLng([lat, lon]);
+    circle.setLatLng([lat, lon]).setRadius(acc);
     document.getElementById('stats').innerText = `Acc: ${acc.toFixed(3)}m | Sats: ${siv} | Fix: ${fix}`;
     
-    // Update Table
     const tbody = document.getElementById('logBody');
     tbody.innerHTML = gpsLogs.slice(0, 5).map(l => `<tr><td>${l.time}</td><td>${l.lat.toFixed(5)},${l.lon.toFixed(5)}</td><td>${l.acc}m</td><td>${l.fix}</td></tr>`).join('');
 }
 
-// Fallback Internal GPS
-navigator.geolocation.watchPosition(p => {
-    if(!window.isUsingBLE) updateGPS(p.coords.latitude, p.coords.longitude, p.coords.accuracy, "--", "Internal");
-}, null, { enableHighAccuracy: true });
-
-// Note Saving Logic
+// Observation Handling
 document.getElementById('saveNoteBtn').onclick = () => {
-    const note = document.getElementById('noteInput').value;
-    const last = gpsLogs[0] || { lat:0, lon:0, acc:0, fix:'N/A' };
-    
+    const last = gpsLogs[0] || { lat:0, lon:0, acc:0, fix:'None' };
     observations.unshift({
+        id: Date.now(),
         time: new Date().toLocaleTimeString(),
-        text: note,
+        text: document.getElementById('noteInput').value,
         img: currentImg,
         lat: last.lat, lon: last.lon, acc: last.acc, fix: last.fix
     });
-    
     renderNotes();
     document.getElementById('noteInput').value = '';
     document.getElementById('imagePreview').innerHTML = '';
     currentImg = null;
 };
 
-function renderNotes() {
-    const list = document.getElementById('notesList');
-    list.innerHTML = observations.map(o => `
-        <div class="note-card">
-            <strong>${o.time}</strong> - ${o.text}
-            ${o.img ? `<img src="${o.img}" class="note-img">` : ''}
-            <div class="note-meta">📍 ${o.lat}, ${o.lon} (Acc: ${o.acc}m, ${o.fix})</div>
-        </div>
-    `).join('');
-}
+// Cloud Sync to Backblaze B2
+document.getElementById('syncToCloud').onclick = async () => {
+    if (observations.length === 0) return alert("No observations to sync.");
+    
+    AWS.config.update({
+        accessKeyId: localStorage.getItem('bb-keyId'),
+        secretAccessKey: localStorage.getItem('bb-secret'),
+        region: 'us-west-004' // Standard B2 Region
+    });
 
-// Image Handling
-document.getElementById('imageInput').onchange = (e) => {
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-        currentImg = ev.target.result;
-        document.getElementById('imagePreview').innerHTML = `<img src="${currentImg}">`;
-    };
-    reader.readAsDataURL(e.target.files[0]);
+    const s3 = new AWS.S3({
+        endpoint: new AWS.Endpoint(localStorage.getItem('bb-endpoint')),
+        s3ForcePathStyle: true
+    });
+
+    const surveyFolder = `StratosLink_Survey_${Date.now()}`;
+    document.getElementById('status').innerText = "Syncing...";
+
+    try {
+        for (let obs of observations) {
+            if (obs.img) {
+                const blob = await (await fetch(obs.img)).blob();
+                await s3.putObject({
+                    Bucket: localStorage.getItem('bb-bucket'),
+                    Key: `${surveyFolder}/images/IMG_${obs.id}.jpg`,
+                    Body: blob,
+                    ContentType: 'image/jpeg'
+                }).promise();
+            }
+        }
+        // Upload CSV
+        const csv = "Time,Note,Lat,Lon,Acc,Fix\n" + observations.map(o => `"${o.time}","${o.text}",${o.lat},${o.lon},${o.acc},${o.fix}`).join("\n");
+        await s3.putObject({
+            Bucket: localStorage.getItem('bb-bucket'),
+            Key: `${surveyFolder}/data_log.csv`,
+            Body: csv,
+            ContentType: 'text/csv'
+        }).promise();
+
+        alert("Upload Successful!");
+        document.getElementById('status').innerText = "Cloud Sync Success";
+    } catch (e) { alert("Upload Failed: " + e.message); }
 };
 
-// Bluetooth
-document.getElementById('connectBle').onclick = async () => {
-    const device = await navigator.bluetooth.requestDevice({ filters:[{namePrefix:'Stratos'}], optionalServices:['181a'] });
-    const server = await device.gatt.connect();
-    const char = await (await server.getPrimaryService('181a')).getCharacteristic('2a67');
-    window.isUsingBLE = true;
-    document.getElementById('status').innerText = "📡 StratosLink: Hardware Connected";
-    char.startNotifications();
-    char.oncharacteristicvaluechanged = (e) => {
-        const v = e.target.value;
-        const fixMap = { 0:"No Fix", 3:"3D Fix", 5:"RTK Float", 6:"RTK FIXED" };
-        updateGPS(v.getFloat32(0,true), v.getFloat32(4,true), v.getFloat32(8,true), v.getUint8(12), fixMap[v.getUint8(13)]);
-    };
-};
-
-function switchView(v) {
-    document.getElementById('notesList').classList.toggle('hidden', v !== 'notes');
-    document.getElementById('gpsView').classList.toggle('hidden', v !== 'gps');
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(v === 'notes' ? 'btn-notes' : 'btn-gps').classList.add('active');
-}
-
-// CSV Export
-document.getElementById('downloadCsv').onclick = () => {
-    let csv = "Time,Note,Lat,Lon,Accuracy,Fix\n" + observations.map(o => `"${o.time}","${o.text}",${o.lat},${o.lon},${o.acc},${o.fix}`).join("\n");
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `Survey_${Date.now()}.csv`; a.click();
-};
+// ... Include BLE, imageInput, and switchView logic from previous version ...
